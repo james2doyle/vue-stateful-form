@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>Vue Stateful Form</title>
+  <meta name="description" content="Vue component to create a form that escalates all events to the top level and supports v-model" />
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="author" content="James Doyle" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+  <script src="./stateful-form.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.3.2/styles/atom-one-dark.min.css">
+  <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.3/new.min.css">
+  <style type="text/css" media="screen">
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      min-width: 100vw;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin: 2rem auto 5rem;
+      padding: 0 2rem;
+    }
+    .container .hljs {
+      background: none;
+    }
+    .container-between {
+      width: 100%;
+      max-width: 800px;
+      margin: 2rem auto 5rem;
+      display: flex;
+      justify-content: space-around;
+    }
+    .center {
+      text-align: center;
+    }
+    .task-list-item input {
+      margin-right: 0.5rem;
+    }
+    /* remove new.css styles */
+    .omnibar h3 {
+      color: black;
+      border-bottom: none;
+    }
+    .omnibar input {
+      color: black;
+      background: initial;
+    }
+    .omnibar-search-list a {
+      display: inline-block;
+      width: 100%;
+    }
+    .omnibar-search-list a:focus {
+      /* focus styles */
+      outline: 1px solid rgba(0, 150, 255, 1);
+      -webkit-outline: 1px solid rgba(0, 150, 255, 1);
+      -moz-outline: 1px solid rgba(0, 150, 255, 1);
+      -ms-outline: 1px solid rgba(0, 150, 255, 1);
+      -o-outline: 1px solid rgba(0, 150, 255, 1);
+      box-shadow: 0 0 6px rgba(0, 150, 255, 1);
+    }
+    pre {
+      padding: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <c class="output" id="html-output"><h1><a id="vue-stateful-form" class="anchor" aria-hidden="true" href="#vue-stateful-form"></a>Vue Stateful Form</h1>
+<blockquote>
+<p>Create a form that escalates all events to the top level and supports v-model</p>
+</blockquote>
+<div class="container-between">
+      <component is="StatefulForm" v-model="data" :schema="schema" @submit="handleSubmit"></component>
+      <pre v-html="JSON.stringify(data, null, 2)"></pre>
+    </div>
+<h2><a id="demo" class="anchor" aria-hidden="true" href="#demo"></a>Demo</h2>
+<p class="center"><img src="demo.gif" alt="demo of the form in action"></p>
+<h2><a id="features" class="anchor" aria-hidden="true" href="#features"></a>Features</h2>
+<ul>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">unstyled but includes lots of classes to target</li>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">2 way binding with proper <code>v-model</code> support</li>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">built-in debounce function</li>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">still allows <code>submit</code> handler</li>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">encodes "multiple" inputs (select[multiple], radio, checkbox)</li>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">no hacky "mounted" calls</li>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">supports most input elements (no <code>file</code>/<code>image</code> support)</li>
+<li class="task-list-item"><input type="checkbox" disabled="" checked="">sets <code>ref</code> for each input automatically</li>
+</ul>
+<h2><a id="installation" class="anchor" aria-hidden="true" href="#installation"></a>Installation</h2>
+<pre><code class="language-bash hljs">npm install vue-stateful-form
+</code></pre>
+<h3><a id="global-usage" class="anchor" aria-hidden="true" href="#global-usage"></a>Global Usage</h3>
+<pre><code class="language-js hljs javascript"><span class="hljs-keyword">import</span> Vue <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>;
+<span class="hljs-keyword">import</span> StatefulForm <span class="hljs-keyword">from</span> <span class="hljs-string">'vue-stateful-form'</span>;
+
+Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
+</code></pre>
+<h3><a id="in-single-file-components" class="anchor" aria-hidden="true" href="#in-single-file-components"></a>In Single File Components</h3>
+<pre><code class="language-js hljs javascript"><span class="hljs-keyword">import</span> StatefulForm <span class="hljs-keyword">from</span> <span class="hljs-string">'vue-stateful-form'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-comment">// ...</span>
+  <span class="hljs-attr">components</span>: {
+    StatefulForm,
+  },
+  <span class="hljs-comment">// ...</span>
+};
+</code></pre>
+<h2><a id="usage" class="anchor" aria-hidden="true" href="#usage"></a>Usage</h2>
+<pre><code class="language-html hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"app"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">StatefulForm</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">"data"</span> <span class="hljs-attr">:schema</span>=<span class="hljs-string">"schema"</span> @<span class="hljs-attr">submit</span>=<span class="hljs-string">"handleSubmit"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">pre</span> <span class="hljs-attr">v-html</span>=<span class="hljs-string">"JSON.stringify(data, null, 2)"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">pre</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> Vue <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>;
+<span class="hljs-keyword">import</span> StatefulForm <span class="hljs-keyword">from</span> <span class="hljs-string">'vue-stateful-form'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Vue.extend({
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'StatefulFormExample'</span>,
+  <span class="hljs-attr">components</span>: {
+    StatefulForm
+  },
+  data() {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-comment">// here is the model for the fields</span>
+      <span class="hljs-comment">// the name of the key should match the name of the field</span>
+      <span class="hljs-comment">// missing fields will be set to `null`</span>
+      <span class="hljs-attr">data</span>: {
+        <span class="hljs-string">'my-text'</span>: <span class="hljs-string">'This is my text field'</span>,
+        <span class="hljs-string">'my-email'</span>: <span class="hljs-string">'james2doyle@gmail.com'</span>,
+        <span class="hljs-string">'my-tel'</span>: <span class="hljs-string">'12345678900'</span>,
+        <span class="hljs-string">'my-url'</span>: <span class="hljs-string">'https://ohdoylerules.com'</span>,
+        <span class="hljs-string">'my-textarea'</span>: <span class="hljs-string">'This is my textarea'</span>,
+        <span class="hljs-string">'my-select'</span>: <span class="hljs-string">'2'</span>,
+        <span class="hljs-string">'my-multi-select'</span>: [<span class="hljs-string">'3'</span>], <span class="hljs-comment">// multiple values require arrays</span>
+        <span class="hljs-string">'my-range'</span>: <span class="hljs-string">'25'</span>,
+        <span class="hljs-string">'my-checkbox'</span>: <span class="hljs-string">'1'</span>,
+        <span class="hljs-string">'my-multi-checkbox'</span>: [<span class="hljs-string">'2'</span>], <span class="hljs-comment">// multiple values require arrays</span>
+        <span class="hljs-string">'my-radio'</span>: <span class="hljs-string">'1'</span>,
+      },
+      <span class="hljs-attr">schema</span>: [
+        {
+          <span class="hljs-comment">// name will be used as the field `id` and also the v-model key</span>
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-text'</span>,
+          <span class="hljs-attr">label</span>: <span class="hljs-string">'My Text Field'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>,
+          <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span>,
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-email'</span>,
+          <span class="hljs-attr">label</span>: <span class="hljs-literal">null</span>, <span class="hljs-comment">// null label will remove the label</span>
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'email'</span>,
+          <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span>,
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-tel'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'tel'</span>,
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-url'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'url'</span>,
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-password'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'password'</span>,
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-textarea'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'textarea'</span>,
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-checkbox'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'checkbox'</span>,
+          <span class="hljs-attr">options</span>: [
+            <span class="hljs-comment">// single checkbox is just a single option</span>
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'1'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Enabled?'</span> },
+          ],
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-multi-checkbox'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'checkbox'</span>,
+          <span class="hljs-attr">options</span>: [
+            <span class="hljs-comment">// multiple checkbox is more than 1 option</span>
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'1'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Checkbox One'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'2'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Checkbox Two'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'3'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Checkbox Three'</span> },
+          ],
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-range'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'range'</span>,
+          <span class="hljs-attr">min</span>: <span class="hljs-string">'1'</span>,
+          <span class="hljs-attr">max</span>: <span class="hljs-string">'100'</span>,
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-select'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'select'</span>,
+          <span class="hljs-attr">options</span>: [
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'1'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'One'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'2'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Two'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'3'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Three'</span> },
+          ],
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-radio'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'radio'</span>,
+          <span class="hljs-attr">options</span>: [
+            <span class="hljs-comment">// radio is the same as a select</span>
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'1'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Radio One'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'2'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Radio Two'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'3'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Radio Three'</span> },
+          ],
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-multi-select'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'selectMultiple'</span>,
+          <span class="hljs-attr">options</span>: [
+            <span class="hljs-comment">// same as a checkbox with multiple</span>
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'1'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'One'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'2'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Two'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'3'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'Three'</span> },
+          ],
+        },
+        {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'my-submit'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'submit'</span>,
+        },
+      ],
+    }
+  },
+  <span class="hljs-attr">methods</span>: {
+    handleSubmit(event) {
+      event.preventDefault();
+
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'submission captured and stopped'</span>);
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'data'</span>, <span class="hljs-built_in">this</span>.data);
+
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    },
+  },
+});
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<h2><a id="available-props" class="anchor" aria-hidden="true" href="#available-props"></a>Available Props</h2>
+<ul>
+<li><em>schema</em>: <code>Array&lt;StatefulFormDetails&gt;</code> - the schema for the form (required)</li>
+<li><em>debounce</em>: <code>number</code> - only emits the <code>input</code> event after a set amount of time has passed (default: <code>10</code>)</li>
+</ul>
+<pre><code class="language-typescript hljs"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> StatefulFormDetails {
+  id?: <span class="hljs-built_in">string</span>
+  name: <span class="hljs-built_in">string</span>
+  label?: <span class="hljs-built_in">string</span>
+  <span class="hljs-keyword">type</span>: <span class="hljs-built_in">string</span>
+  required?: <span class="hljs-built_in">boolean</span>
+  placeholder?: <span class="hljs-built_in">string</span>
+  min?: <span class="hljs-built_in">number</span>
+  max?: <span class="hljs-built_in">number</span>
+  step?: <span class="hljs-built_in">number</span>
+  maxlength?: <span class="hljs-built_in">number</span>
+  rows?: <span class="hljs-built_in">number</span>
+  cols?: <span class="hljs-built_in">number</span>
+  pattern?: <span class="hljs-built_in">string</span>
+  data?: Vue.VNodeData
+  options?: <span class="hljs-built_in">Array</span>&lt;{
+    label: <span class="hljs-built_in">string</span>
+    value: <span class="hljs-built_in">any</span>
+  }&gt;
+}
+</code></pre>
+<h2><a id="available-classes" class="anchor" aria-hidden="true" href="#available-classes"></a>Available Classes</h2>
+<pre><code class="language-css">/* the main wrapper class */
+.stateful-form {}
+/* wrapper for top level input */
+.form-input-wrapper {}
+/* wrapper for the label */
+.form-label-wrapper {}
+/* wrapper for radio and checkboxes when there are multiples */
+.form-group-label {}
+/* the actual text inside the label wrapper */
+.form-label-text {}
+/* a class applied based on the input tag */
+.form-input-input {}
+/* a class applied based on the input type */
+.form-input-range {}
+</code></pre>
+<h2><a id="development" class="anchor" aria-hidden="true" href="#development"></a>Development</h2>
+<ul>
+<li><code>npm run serve</code>: run a development server with a the <code>serve.vue</code> page</li>
+<li><code>npm run build</code>: generate the build output</li>
+</ul>
+</c>
+</div>
+</div>
+<script type="text/javascript" charset="utf-8">
+  new Vue({
+    el: '#app',
+    components: {
+      StatefulForm: window.StatefulForm,
+    },
+    data() {
+      return {
+        data: {
+          'my-text': 'This is my text field',
+          'my-email': 'james2doyle@gmail.com',
+          'my-textarea': 'This is my textarea',
+          'my-select': '2',
+          'my-multi-select': [], // multiple values require arrays
+          'my-range': '25',
+          'my-checkbox': '1',
+          'my-multi-checkbox': [], // multiple values require arrays
+          'my-radio': null,
+        },
+        schema: [
+          {
+            // name will be used as the field `id` and also the v-model key
+            name: 'my-text',
+            label: 'My Text Field',
+            type: 'text',
+            required: true,
+          },
+          {
+            name: 'my-email',
+            label: null, // null label will remove the label
+            type: 'email',
+            required: true,
+          },
+          {
+            name: 'my-textarea',
+            type: 'textarea',
+          },
+          {
+            name: 'my-checkbox',
+            type: 'checkbox',
+            options: [
+              // single checkbox is just a single option
+              { value: '1', label: 'Single Check?' },
+            ],
+          },
+          {
+            name: 'my-multi-checkbox',
+            type: 'checkbox',
+            options: [
+              // multiple checkbox is more than 1 option
+              { value: '1', label: 'Checkbox One' },
+              { value: '2', label: 'Checkbox Two' },
+              { value: '3', label: 'Checkbox Three' },
+            ],
+          },
+          {
+            name: 'my-range',
+            type: 'range',
+            min: '1',
+            max: '100',
+          },
+          {
+            name: 'my-select',
+            type: 'select',
+            options: [
+              { value: '1', label: 'One' },
+              { value: '2', label: 'Two' },
+              { value: '3', label: 'Three' },
+            ],
+          },
+          {
+            name: 'my-radio',
+            type: 'radio',
+            options: [
+              // radio is the same as a select
+              { value: '1', label: 'Radio One' },
+              { value: '2', label: 'Radio Two' },
+              { value: '3', label: 'Radio Three' },
+            ],
+          },
+          {
+            name: 'my-multi-select',
+            type: 'selectMultiple',
+            options: [
+              // same as a checkbox with multiple
+              { value: '1', label: 'One' },
+              { value: '2', label: 'Two' },
+              { value: '3', label: 'Three' },
+            ],
+          },
+          {
+            name: 'my-submit',
+            type: 'submit',
+          },
+        ],
+      }
+    },
+    methods: {
+      handleSubmit(event) {
+        event.preventDefault();
+
+        console.log('submission captured and stopped');
+        console.log('data', this.data);
+
+        return false;
+      },
+    },
+  });
+</script>
+</body>
+</html>
