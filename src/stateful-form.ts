@@ -177,14 +177,13 @@ const makeInput = function(this: Data, createElement: Vue.CreateElement, details
   const element = types[details.type as keyof typeof types];
 
   element.data = {
+    domProps: {},
     ...element.data,
     class: ['form-input', `form-input-${element.tag}`, `form-input-${details.type}`],
     attrs: {
       id: details.id || details.name,
       ...details,
     },
-    // @ts-ignore
-    domProps: element.data?.domProps || {},
     ref: details.name,
   };
 
@@ -311,7 +310,7 @@ const makeInput = function(this: Data, createElement: Vue.CreateElement, details
           },
         },
         [
-          ['checked', 'button'].includes(element.setter) === false && details?.label !== null ? createElement(
+          ['checked', 'button'].includes(element.setter) === false && details.label !== null ? createElement(
             'div',
             {
               class: 'form-label-text',
