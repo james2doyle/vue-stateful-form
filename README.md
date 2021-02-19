@@ -17,6 +17,7 @@ Vue Stateful Form
 - [x] no hacky "mounted" calls
 - [x] supports most input elements (no `file`/`image` support)
 - [x] sets `ref` for each input automatically
+- [x] supports custom components and passing props
 
 ## Installation
 
