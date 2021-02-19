@@ -201,6 +201,7 @@ export interface StatefulFormDetails {
   label?: string
   type: string
   required?: boolean
+  class?: string
   placeholder?: string
   min?: number
   max?: number
