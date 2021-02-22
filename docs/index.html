@@ -293,6 +293,83 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
 /* a class applied based on the input type */
 .form-input-range {}
 </code></pre>
+<h2><a id="custom-components" class="anchor" aria-hidden="true" href="#custom-components"></a>Custom Components</h2>
+<p>In order to update the <code>v-model</code> using a custom component (not a native input) then you will need to fire the input event on the parent form.</p>
+<p>When this event is fired, we serialize the form with <code>FormData</code> and update the <code>v-model</code> attached to the form. In order for the form to properly pick up the value in your custom element using this approach, you need to hide a hidden input alongside your custom component.</p>
+<p>You can see an example of this below:</p>
+<pre><code class="language-html hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- hide an input here so that the FormData can pick it up --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">:name</span>=<span class="hljs-string">"$attrs.name"</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"model"</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- add a handler to the custom input that we can hook in to --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">RealNiceColorPicker</span> @<span class="hljs-attr">change</span>=<span class="hljs-string">"handleChange"</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'MyCustomColorPicker'</span>,
+  <span class="hljs-comment">// other stuff...</span>
+  <span class="hljs-attr">props</span>: {
+    <span class="hljs-comment">// value prop is always passed if a custom component is detected</span>
+    <span class="hljs-attr">value</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">String</span>,
+      <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span>,
+    },
+  },
+  data() {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-comment">// set the initial state to whatever was passed in</span>
+      <span class="hljs-attr">model</span>: <span class="hljs-built_in">this</span>.value,
+    };
+  },
+  <span class="hljs-attr">methods</span>: {
+    handleChange(color) {
+      <span class="hljs-comment">// update the local state that sets the value of the hidden input</span>
+      <span class="hljs-built_in">this</span>.model = color;
+
+      <span class="hljs-keyword">const</span> evt = <span class="hljs-keyword">new</span> Event(<span class="hljs-string">'input'</span>, { <span class="hljs-attr">bubbles</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">cancelable</span>: <span class="hljs-literal">false</span> });
+      <span class="hljs-comment">// emit the native event on the parent form</span>
+      <span class="hljs-built_in">this</span>.$parent.$el.dispatchEvent(evt);
+    }
+  },
+};
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>Another option is to bind the <code>v-model</code> directly to the custom component and then use a watcher to call the native event:</p>
+<pre><code class="language-html hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- hide an input here so that the FormData can pick it up --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">:name</span>=<span class="hljs-string">"$attrs.name"</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"model"</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- add a handler to the custom input that we can hook in to --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">RealNiceColorPicker</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">"model"</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'MyCustomColorPicker'</span>,
+  <span class="hljs-comment">// other stuff...</span>
+  <span class="hljs-attr">props</span>: {
+    <span class="hljs-comment">// value prop is always passed if a custom component is detected</span>
+    <span class="hljs-attr">value</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">String</span>,
+      <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span>,
+    },
+  },
+  data() {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-comment">// set the initial state to whatever was passed in</span>
+      <span class="hljs-attr">model</span>: <span class="hljs-built_in">this</span>.value,
+    };
+  },
+  <span class="hljs-attr">watch</span>: {
+    model() {
+      <span class="hljs-keyword">const</span> evt = <span class="hljs-keyword">new</span> Event(<span class="hljs-string">'input'</span>, { <span class="hljs-attr">bubbles</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">cancelable</span>: <span class="hljs-literal">false</span> });
+      <span class="hljs-comment">// emit the native event on the parent form</span>
+      <span class="hljs-built_in">this</span>.$parent.$el.dispatchEvent(evt);
+    },
+  },
+};
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>This approach works nicely if you are using a custom component that doesn't have any events to capture the changes on the component.</p>
 <h2><a id="development" class="anchor" aria-hidden="true" href="#development"></a>Development</h2>
 <ul>
 <li><code>npm run serve</code>: run a development server with a the <code>serve.vue</code> page</li>

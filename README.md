@@ -237,6 +237,93 @@ export interface StatefulFormDetails {
 .form-input-range {}
 ```
 
+## Custom Components
+
+In order to update the `v-model` using a custom component (not a native input) then you will need to fire the input event on the parent form.
+
+When this event is fired, we serialize the form with `FormData` and update the `v-model` attached to the form. In order for the form to properly pick up the value in your custom element using this approach, you need to hide a hidden input alongside your custom component.
+
+You can see an example of this below:
+
+```html
+<template>
+  <!-- hide an input here so that the FormData can pick it up -->
+  <input type="hidden" :name="$attrs.name" :value="model">
+  <!-- add a handler to the custom input that we can hook in to -->
+  <RealNiceColorPicker @change="handleChange" />
+</template>
+
+<script>
+export default {
+  name: 'MyCustomColorPicker',
+  // other stuff...
+  props: {
+    // value prop is always passed if a custom component is detected
+    value: {
+      type: String,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      // set the initial state to whatever was passed in
+      model: this.value,
+    };
+  },
+  methods: {
+    handleChange(color) {
+      // update the local state that sets the value of the hidden input
+      this.model = color;
+
+      const evt = new Event('input', { bubbles: true, cancelable: false });
+      // emit the native event on the parent form
+      this.$parent.$el.dispatchEvent(evt);
+    }
+  },
+};
+</script>
+```
+
+Another option is to bind the `v-model` directly to the custom component and then use a watcher to call the native event:
+
+```html
+<template>
+  <!-- hide an input here so that the FormData can pick it up -->
+  <input type="hidden" :name="$attrs.name" :value="model">
+  <!-- add a handler to the custom input that we can hook in to -->
+  <RealNiceColorPicker v-model="model" />
+</template>
+
+<script>
+export default {
+  name: 'MyCustomColorPicker',
+  // other stuff...
+  props: {
+    // value prop is always passed if a custom component is detected
+    value: {
+      type: String,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      // set the initial state to whatever was passed in
+      model: this.value,
+    };
+  },
+  watch: {
+    model() {
+      const evt = new Event('input', { bubbles: true, cancelable: false });
+      // emit the native event on the parent form
+      this.$parent.$el.dispatchEvent(evt);
+    },
+  },
+};
+</script>
+```
+
+This approach works nicely if you are using a custom component that doesn't have any events to capture the changes on the component.
+
 ## Development
 
 - `npm run serve`: run a development server with a the `serve.vue` page
