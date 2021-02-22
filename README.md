@@ -9,15 +9,16 @@ Vue Stateful Form
 
 ## Features
 
-- [x] unstyled but includes lots of classes to target
+- [x] uses event delegation from the top level `form` element
 - [x] 2 way binding with proper `v-model` support
+- [x] unstyled but includes lots of classes to target
 - [x] built-in debounce function
 - [x] still allows `submit` handler
 - [x] encodes "multiple" inputs (select[multiple], radio, checkbox)
 - [x] no hacky "mounted" calls
 - [x] supports most input elements (no `file`/`image` support)
 - [x] sets `ref` for each input automatically
-- [x] supports custom components and passing props
+- [x] supports custom components and passing props/attrs
 
 ## Installation
 
