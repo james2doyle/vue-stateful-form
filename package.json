@@ -1,6 +1,6 @@
 {
   "name": "vue-stateful-form",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Create a form that escalates all events to the top level and supports v-model",
   "homepage": "https://james2doyle.github.io/vue-stateful-form",
   "keywords": [

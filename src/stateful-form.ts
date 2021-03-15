@@ -273,7 +273,7 @@ const makeElement = function makeElement(this: Data, details: StatefulFormDetail
   // either handle native types or support a custom type
   const element = getType(details.type);
 
-  element.data = merge(element.data, {
+  element.data = merge(element.data, details.data, {
     domProps: {},
     props: {},
     class: `form-input form-input-${element.tag} form-input-${details.type}`,
