@@ -1,142 +1,6 @@
 import Vue from 'vue';
 import { get, set, merge } from 'lodash-es';
 
-const types = {
-  button: {
-    tag: 'button',
-    setter: 'button',
-    data: {
-      attr: {
-        type: 'button',
-      },
-    },
-  },
-  checkbox: {
-    tag: 'input',
-    setter: 'checked',
-    data: {},
-  },
-  radio: {
-    tag: 'input',
-    setter: 'checked',
-    data: {},
-  },
-  color: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  date: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  'datetime-local': {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  email: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  file: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  hidden: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  image: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  month: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  number: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  password: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  range: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  reset: {
-    tag: 'input',
-    setter: 'button',
-    data: {},
-  },
-  search: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  submit: {
-    tag: 'input',
-    setter: 'button',
-    data: {},
-  },
-  tel: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  text: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  time: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  url: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  week: {
-    tag: 'input',
-    setter: 'value',
-    data: {},
-  },
-  textarea: {
-    tag: 'textarea',
-    setter: 'innerHTML',
-    data: {},
-  },
-  select: {
-    tag: 'select',
-    setter: 'selected',
-    data: {},
-  },
-  selectMultiple: {
-    tag: 'select',
-    setter: 'selected',
-    data: {
-      domProps: {
-        multiple: true,
-      },
-    },
-  },
-};
-
 interface Methods {
   getFormData(): Record<string, any>
   inputHandler(event?: InputEvent): void
@@ -175,7 +39,151 @@ interface Props {
   debounce: number
 }
 
-const makeOptions = function(this: Data, createElement: Vue.CreateElement, details: StatefulFormDetails, element: any) {
+const getType = function getType(key: string) {
+  const types = {
+    button: {
+      tag: 'button',
+      setter: 'button',
+      data: {
+        attr: {
+          type: 'button',
+        },
+      },
+    },
+    checkbox: {
+      tag: 'input',
+      setter: 'checked',
+      data: {},
+    },
+    radio: {
+      tag: 'input',
+      setter: 'checked',
+      data: {},
+    },
+    color: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    date: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    'datetime-local': {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    email: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    file: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    hidden: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    image: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    month: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    number: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    password: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    range: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    reset: {
+      tag: 'input',
+      setter: 'button',
+      data: {},
+    },
+    search: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    submit: {
+      tag: 'input',
+      setter: 'button',
+      data: {},
+    },
+    tel: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    text: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    time: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    url: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    week: {
+      tag: 'input',
+      setter: 'value',
+      data: {},
+    },
+    textarea: {
+      tag: 'textarea',
+      setter: 'innerHTML',
+      data: {},
+    },
+    select: {
+      tag: 'select',
+      setter: 'selected',
+      data: {},
+    },
+    selectMultiple: {
+      tag: 'select',
+      setter: 'selected',
+      data: {
+        domProps: {
+          multiple: true,
+        },
+      },
+    },
+  };
+
+  return types[key as keyof typeof types] || {
+    tag: key,
+    setter: 'custom',
+    data: {},
+  }
+}
+
+const makeOptions = function makeOptions(this: Data, createElement: Vue.CreateElement, details: StatefulFormDetails, element: any) {
   const options: Array<Vue.VNode> = [];
 
   if (!details.options) {
@@ -245,7 +253,7 @@ const makeOptions = function(this: Data, createElement: Vue.CreateElement, detai
                   domProps: {
                     innerText: label,
                   },
-                  ref: `${details.name}-${index}`,
+                  // ref: `${details.name}-${index}`,
                   // refInFor: true,
                 }
               )
@@ -261,26 +269,23 @@ const makeOptions = function(this: Data, createElement: Vue.CreateElement, detai
   return options;
 };
 
-const makeElement = function(this: Data, details: StatefulFormDetails) {
+const makeElement = function makeElement(this: Data, details: StatefulFormDetails) {
   // either handle native types or support a custom type
-  const element = types[details.type as keyof typeof types] || {
-    tag: details.type,
-    setter: 'custom',
-    data: {},
-  };
+  const element = getType(details.type);
 
   element.data = merge(element.data, {
     domProps: {},
+    props: {},
     class: `form-input form-input-${element.tag} form-input-${details.type}`,
     attrs: details,
   });
 
   if (['value', 'checked'].includes(element.setter)) {
-    set(element, 'data.attrs.value', this.$attrs.value ? this.$attrs.value[details.name] : '');
+    set(element, 'data.attrs.value', get(this.$attrs.value, details.name, ''));
   }
 
   if (['textarea'].includes(element.tag)) {
-    set(element, 'data.domProps.innerHTML', this.$attrs.value ? this.$attrs.value[details.name] : '');
+    set(element, 'data.domProps.innerHTML', get(this.$attrs.value, details.name, ''));
   }
 
   if (element.setter === 'button') {
@@ -288,7 +293,7 @@ const makeElement = function(this: Data, details: StatefulFormDetails) {
   }
 
   if (element.setter === 'custom') {
-    set(element, 'data.props.value', this.$attrs.value ? this.$attrs.value[details.name] : '');
+    set(element, 'data.props.value', get(this.$attrs.value, details.name, ''));
   }
 
   if (['button'].includes(element.tag)) {
@@ -298,7 +303,7 @@ const makeElement = function(this: Data, details: StatefulFormDetails) {
   return element;
 };
 
-const makeInput = function(this: Data, createElement: Vue.CreateElement, details: StatefulFormDetails, index: number) {
+const makeInput = function makeInput(this: Data, createElement: Vue.CreateElement, details: StatefulFormDetails, index: number) {
   const element = makeElement.call(this, details);
 
   const options = makeOptions.call(this, createElement, details, element);
@@ -315,11 +320,16 @@ const makeInput = function(this: Data, createElement: Vue.CreateElement, details
   set(element, 'data.key', details.name);
   set(element, 'data.ref', details.name);
   set(element, 'data.attrs.id', details.id || details.name);
+  set(element, 'data.attrs.name', details.name);
+  set(element, 'data.attrs.index', index);
 
   return createElement(
     'div',
     {
       class: ['form-input-wrapper', `form-input-${element.tag}`, `form-input-${details.type}`, details.class].filter(Boolean),
+      attrs: {
+        index,
+      },
     },
     [
       createElement(
@@ -381,7 +391,6 @@ export default Vue.extend<Data, Methods, {}, Props>({
         // @ts-ignore
         .reduce((result: Record<string, any>, [key]: [string, any]) => {
           // handle fields that use multiple values
-          // @ts-ignore
           const scheme = this.schema.find(detail => detail.name === key) || this.schema[0];
           const val = (scheme.options || []).length > 1 && ['radio', 'select'].includes(scheme.type) === false ? formData.getAll(key) : formData.get(key);
           result[key] = val;
@@ -423,6 +432,8 @@ export default Vue.extend<Data, Methods, {}, Props>({
     },
   },
   render(createElement) {
+    const inputMaker = makeInput.bind(this);
+
     return createElement(
       'form',
       {
@@ -433,7 +444,7 @@ export default Vue.extend<Data, Methods, {}, Props>({
           input: this.inputHandler
         },
       },
-      this.schema.map((detail, index) => makeInput.call(this, createElement, detail, index)),
+      this.schema.map((detail, index) => inputMaker(createElement, detail, index)),
     );
-  },
+  }
 });
