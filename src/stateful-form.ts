@@ -246,6 +246,7 @@ const makeOptions = function(this: Data, createElement: Vue.CreateElement, detai
                     innerText: label,
                   },
                   ref: `${details.name}-${index}`,
+                  // refInFor: true,
                 }
               )
             ]
@@ -268,14 +269,10 @@ const makeElement = function(this: Data, details: StatefulFormDetails) {
     data: {},
   };
 
-  element.data = merge(element.data, details.data, {
+  element.data = merge(element.data, {
     domProps: {},
     class: `form-input form-input-${element.tag} form-input-${details.type}`,
-    attrs: {
-      id: details.id || details.name,
-      ...details,
-    },
-    ref: details.name,
+    attrs: details,
   });
 
   if (['value', 'checked'].includes(element.setter)) {
@@ -301,21 +298,28 @@ const makeElement = function(this: Data, details: StatefulFormDetails) {
   return element;
 };
 
-const makeInput = function(this: Data, createElement: Vue.CreateElement, details: StatefulFormDetails) {
+const makeInput = function(this: Data, createElement: Vue.CreateElement, details: StatefulFormDetails, index: number) {
   const element = makeElement.call(this, details);
 
   const options = makeOptions.call(this, createElement, details, element);
 
   if (element.setter === 'checked') {
     element.tag = 'div';
-    // @ts-ignore
-    element.data.ref = null;
   }
+
+  if (options.length > 0) {
+    set(element, 'data.attrs.options', null);
+    set(element, 'data.attrs.type', null);
+  }
+
+  set(element, 'data.key', details.name + index);
+  set(element, 'data.ref', details.name + index);
+  set(element, 'data.attrs.id', details.id || details.name);
 
   return createElement(
     'div',
     {
-      class: `form-input-wrapper form-input-${element.tag} form-input-${details.type} ${String(details.class)}`,
+      class: ['form-input-wrapper', `form-input-${element.tag}`, `form-input-${details.type}`, details.class].filter(Boolean),
     },
     [
       createElement(
@@ -423,12 +427,13 @@ export default Vue.extend<Data, Methods, {}, Props>({
       'form',
       {
         class: 'stateful-form',
+        attrs: this.$attrs,
         on: {
           ...this.$listeners,
           input: this.inputHandler
         },
       },
-      this.schema.map((detail) => makeInput.call(this, createElement, detail)),
+      this.schema.map((detail, index) => makeInput.call(this, createElement, detail, index)),
     );
   },
 });
