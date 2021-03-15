@@ -312,8 +312,8 @@ const makeInput = function(this: Data, createElement: Vue.CreateElement, details
     set(element, 'data.attrs.type', null);
   }
 
-  set(element, 'data.key', details.name + index);
-  set(element, 'data.ref', details.name + index);
+  set(element, 'data.key', details.name);
+  set(element, 'data.ref', details.name);
   set(element, 'data.attrs.id', details.id || details.name);
 
   return createElement(
