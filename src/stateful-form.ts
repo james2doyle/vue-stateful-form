@@ -214,7 +214,10 @@ const makeOptions = function makeOptions(this: Data, createElement: Vue.CreateEl
 
   if (element.setter === 'checked') {
     const newOptions = details.options.map(({ label, value }, index: number) => {
-      const checked = this.$attrs.value && Array.isArray(this.$attrs.value[details.name] || []) ? (this.$attrs.value[details.name] || []).includes(value) : this.$attrs.value[details.name] === value;
+      const theVal = get(this.$attrs, `value[${details.name}]`, null);
+      const checked = this.$attrs.value && Array.isArray(theVal || [])
+        ? (theVal || []).includes(value)
+        : theVal === value;
 
       return createElement(
         'div',
