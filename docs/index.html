@@ -67,6 +67,20 @@
     pre {
       padding: 0.5rem;
     }
+    .emoji-picker button {
+      cursor: pointer;
+      border-radius: 2px;
+      margin: 0 0.5rem 1rem 0;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+      will-change: opacity;
+    }
+    .emoji-picker button:hover {
+      opacity: 0.8;
+    }
+    .emoji-picker button.emoji-picker-selected {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -420,6 +434,76 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
 </div>
 </div>
 <script type="text/javascript" charset="utf-8">
+  // the custom element that needs to be registered before adding it to the schema
+  Vue.component('EmojiPicker', {
+    name: 'EmojiPicker',
+    props: {
+    // value prop is always passed if a custom component is detected
+    value: {
+      type: String,
+      required: false, // can be null
+      default: null,
+    },
+    options: {
+      type: Array,
+      required: true,
+    },
+  },
+  data() {
+    return {
+        // set the initial state to whatever was passed in
+        model: this.value,
+      };
+    },
+    methods: {
+      handleClick(icon) {
+        // update the local state that sets the value of the hidden input
+        this.model = icon;
+
+        const evt = new Event('input', { bubbles: true, cancelable: false });
+        // emit the native event on the parent form
+        this.$parent.$el.dispatchEvent(evt);
+      }
+    },
+    render(_c) {
+      with(this) {
+        return [_c('div', {
+          staticClass: "emoji-picker"
+        }, [_c('input', {
+          attrs: {
+            "type": "hidden",
+            "name": this.$attrs.name
+          },
+          domProps: {
+            "value": this.model
+          }
+        }), _l((this.options), function(option) {
+          return _c('button', {
+            key: option.value,
+            class: {
+              'emoji-picker-selected':
+              model === option.value
+            },
+            attrs: {
+              "type": "button"
+            },
+            domProps: {
+              "textContent": _s(option.label)
+            },
+            on: {
+              "click": function($event) {
+                $event.preventDefault();
+                return handleClick(
+                  option.value
+                  )
+              }
+            }
+          })
+        })], 2)]
+      }
+    }
+  });
+
   new Vue({
     el: '#app',
     components: {
@@ -432,11 +516,12 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
           'my-email': 'james2doyle@gmail.com',
           'my-textarea': 'This is my textarea',
           'my-select': '2',
-          'my-multi-select': [], // multiple values require arrays
+          'my-multi-select': ['1'], // multiple values require arrays
           'my-range': '25',
           'my-checkbox': '1',
-          'my-multi-checkbox': [], // multiple values require arrays
+          'my-multi-checkbox': ['2'], // multiple values require arrays
           'my-radio': null,
+          'custom-emoji': null,
         },
         schema: [
           {
@@ -445,6 +530,7 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
             label: 'My Text Field',
             type: 'text',
             required: true,
+            whenEmpty: '',
           },
           {
             name: 'my-email',
@@ -507,6 +593,16 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
               { value: '1', label: 'One' },
               { value: '2', label: 'Two' },
               { value: '3', label: 'Three' },
+            ],
+          },
+          {
+            name: 'custom-emoji',
+            type: 'EmojiPicker', // custom element registered with `Vue.component(...)`
+            options: [
+              { value: 'bear', label: '🐻' },
+              { value: 'fox', label: '🦊' },
+              { value: 'dog', label: '🐶' },
+              { value: 'mouse', label: '🐹' },
             ],
           },
           {
