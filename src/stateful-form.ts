@@ -14,6 +14,7 @@ export interface StatefulFormDetails {
   required?: boolean
   class?: string
   placeholder?: string
+  whenEmpty?: string
   min?: number
   max?: number
   step?: number
@@ -38,6 +39,9 @@ interface Props {
   schema: Array<StatefulFormDetails>
   debounce: number
 }
+
+const IGNORE_TYPES = ['reset', 'submit', 'button'];
+const HANDLE_AS_ARRAY = ['radio', 'select'];
 
 const getType = function getType(key: string) {
   const types = {
@@ -389,35 +393,25 @@ export default Vue.extend<Data, Methods, {}, Props>({
     getFormData() {
       const formData = new FormData(this.$el as HTMLFormElement);
 
-      // @ts-ignore
-      const results = Array.from(formData)
-        // @ts-ignore
-        .reduce((result: Record<string, any>, [key]: [string, any]) => {
-          // handle fields that use multiple values
-          const scheme = this.schema.find(detail => detail.name === key) || this.schema[0];
-          const val = (scheme.options || []).length > 1 && ['radio', 'select'].includes(scheme.type) === false ? formData.getAll(key) : formData.get(key);
-          result[key] = val;
-
-          return result;
-        }, {});
-
       // fill in missing values that weren't included
-      Object.entries(this.schema)
-        // @ts-ignore
-        .forEach((detail) => {
-          const { name, type, options = [] } = detail[1];
+      const results = Object.freeze(this.schema)
+        .reduce((results: Record<string, any>, detail) => {
+          const { name, type, options = [], whenEmpty = null } = detail;
           // don’t include these results in the output since they are buttons
-          if (['reset', 'submit', 'button'].includes(type)) {
-            return;
+          if (IGNORE_TYPES.includes(type)) {
+            return results;
           }
 
-          // @ts-ignore
-          if (!results[name]) {
-            // set the default value for "none"
-            // @ts-ignore
-            results[name] = options.length > 1 && ['radio', 'select'].includes(type) === false ? [] : null;
-          }
-        });
+          // handle fields that use multiple values
+          const scheme = this.schema.find(detail => detail.name === name) || this.schema[0];
+          const element = getType(scheme.type);
+          // how to handle the items that expect arrays
+          const val = options.length > 1 && HANDLE_AS_ARRAY.includes(scheme.type) === false && element.setter !== 'custom' ? formData.getAll(name) : formData.get(name);
+          // set the default value for "none"
+          results[name] = Array.isArray(val) && val.length === 0 ? whenEmpty : val || whenEmpty;
+
+          return results;
+        }, {});
 
       return results as Record<string, any>;
     },

@@ -121,6 +121,7 @@ export default Vue.extend({
         {
           name: 'my-checkbox',
           type: 'checkbox',
+          whenEmpty: '0',
           options: [
             // single checkbox is just a single option
             { value: '1', label: 'Enabled?' },

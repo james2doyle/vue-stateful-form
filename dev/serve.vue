@@ -74,6 +74,7 @@ export default Vue.extend({
         {
           name: 'my-checkbox',
           type: 'checkbox',
+          whenEmpty: '0',
           options: [
             { value: '1', label: 'Enabled?' },
           ],
