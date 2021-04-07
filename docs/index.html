@@ -144,11 +144,12 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
         <span class="hljs-string">'my-url'</span>: <span class="hljs-string">'https://ohdoylerules.com'</span>,
         <span class="hljs-string">'my-textarea'</span>: <span class="hljs-string">'This is my textarea'</span>,
         <span class="hljs-string">'my-select'</span>: <span class="hljs-string">'2'</span>,
-        <span class="hljs-string">'my-multi-select'</span>: [<span class="hljs-string">'3'</span>], <span class="hljs-comment">// multiple values require arrays</span>
         <span class="hljs-string">'my-range'</span>: <span class="hljs-string">'25'</span>,
         <span class="hljs-string">'my-checkbox'</span>: <span class="hljs-string">'1'</span>,
         <span class="hljs-string">'my-multi-checkbox'</span>: [<span class="hljs-string">'2'</span>], <span class="hljs-comment">// multiple values require arrays</span>
         <span class="hljs-string">'my-radio'</span>: <span class="hljs-string">'1'</span>,
+        <span class="hljs-string">'my-multi-select'</span>: [<span class="hljs-string">'3'</span>], <span class="hljs-comment">// multiple values require arrays</span>
+        <span class="hljs-string">'custom-icon'</span>: <span class="hljs-literal">null</span>, <span class="hljs-comment">// example of custom element with empty starting state</span>
       },
       <span class="hljs-attr">schema</span>: [
         {
@@ -157,6 +158,7 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
           <span class="hljs-attr">label</span>: <span class="hljs-string">'My Text Field'</span>,
           <span class="hljs-attr">type</span>: <span class="hljs-string">'text'</span>,
           <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span>,
+          <span class="hljs-attr">whenEmpty</span>: <span class="hljs-string">''</span>, <span class="hljs-comment">// use `''` instead of `null` when the field is empty</span>
         },
         {
           <span class="hljs-attr">name</span>: <span class="hljs-string">'my-email'</span>,
@@ -234,6 +236,16 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
           ],
         },
         {
+          <span class="hljs-attr">name</span>: <span class="hljs-string">'custom-icon'</span>,
+          <span class="hljs-attr">type</span>: <span class="hljs-string">'EmojiPicker'</span>, <span class="hljs-comment">// custom element registered with `Vue.component(...)`</span>
+          <span class="hljs-attr">options</span>: [
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'bear'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'🐻'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'fox'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'🦊'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'dog'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'🐶'</span> },
+            { <span class="hljs-attr">value</span>: <span class="hljs-string">'mouse'</span>, <span class="hljs-attr">label</span>: <span class="hljs-string">'🐹'</span> },
+          ],
+        },
+        {
           <span class="hljs-attr">name</span>: <span class="hljs-string">'my-submit'</span>,
           <span class="hljs-attr">type</span>: <span class="hljs-string">'submit'</span>,
         },
@@ -300,20 +312,26 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
 <p>When this event is fired, we serialize the form with <code>FormData</code> and update the <code>v-model</code> attached to the form. In order for the form to properly pick up the value in your custom element using this approach, you need to hide a hidden input alongside your custom component.</p>
 <p>You can see an example of this below:</p>
 <pre><code class="language-html hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
-  <span class="hljs-comment">&lt;!-- hide an input here so that the FormData can pick it up --&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">:name</span>=<span class="hljs-string">"$attrs.name"</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"model"</span>&gt;</span>
-  <span class="hljs-comment">&lt;!-- add a handler to the custom input that we can hook in to --&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">RealNiceColorPicker</span> @<span class="hljs-attr">change</span>=<span class="hljs-string">"handleChange"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"emoji-picker"</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- hide an input here so that the FormData can pick it up --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">:name</span>=<span class="hljs-string">"$attrs.name"</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"model"</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- add a handler to the custom input that we can hook in to --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">v-for</span>=<span class="hljs-string">"option in options"</span> <span class="hljs-attr">:key</span>=<span class="hljs-string">"option.value"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">:class</span>=<span class="hljs-string">"{ 'emoji-picker-selected': model === option.value}"</span> @<span class="hljs-attr">click.prevent</span>=<span class="hljs-string">"handleClick(option.value)"</span> <span class="hljs-attr">v-text</span>=<span class="hljs-string">"option.label"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
-  <span class="hljs-attr">name</span>: <span class="hljs-string">'MyCustomColorPicker'</span>,
-  <span class="hljs-comment">// other stuff...</span>
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'EmojiPicker'</span>,
   <span class="hljs-attr">props</span>: {
     <span class="hljs-comment">// value prop is always passed if a custom component is detected</span>
     <span class="hljs-attr">value</span>: {
       <span class="hljs-attr">type</span>: <span class="hljs-built_in">String</span>,
+      <span class="hljs-attr">required</span>: <span class="hljs-literal">false</span>, <span class="hljs-comment">// can be null</span>
+      <span class="hljs-attr">default</span>: <span class="hljs-literal">null</span>,
+    },
+    <span class="hljs-attr">options</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">Array</span>,
       <span class="hljs-attr">required</span>: <span class="hljs-literal">true</span>,
     },
   },
@@ -324,9 +342,9 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
     };
   },
   <span class="hljs-attr">methods</span>: {
-    handleChange(color) {
+    handleClick(icon) {
       <span class="hljs-comment">// update the local state that sets the value of the hidden input</span>
-      <span class="hljs-built_in">this</span>.model = color;
+      <span class="hljs-built_in">this</span>.model = icon;
 
       <span class="hljs-keyword">const</span> evt = <span class="hljs-keyword">new</span> Event(<span class="hljs-string">'input'</span>, { <span class="hljs-attr">bubbles</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">cancelable</span>: <span class="hljs-literal">false</span> });
       <span class="hljs-comment">// emit the native event on the parent form</span>
@@ -335,13 +353,34 @@ Vue.component(<span class="hljs-string">'stateful-form'</span>, StatefulForm);
   },
 };
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span>
+.emoji-picker button {
+  cursor: pointer;
+  background: #ccc;
+  border: 1px solid #999;
+  border-radius: 2px;
+  margin: 0 0.5rem 1rem 0;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  will-change: opacity;
+}
+.emoji-picker button:hover {
+  opacity: 0.8;
+}
+.emoji-picker button.emoji-picker-selected {
+  opacity: 1;
+}
+<span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
 </code></pre>
 <p>Another option is to bind the <code>v-model</code> directly to the custom component and then use a watcher to call the native event:</p>
 <pre><code class="language-html hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
-  <span class="hljs-comment">&lt;!-- hide an input here so that the FormData can pick it up --&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">:name</span>=<span class="hljs-string">"$attrs.name"</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"model"</span>&gt;</span>
-  <span class="hljs-comment">&lt;!-- add a handler to the custom input that we can hook in to --&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">RealNiceColorPicker</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">"model"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"my-custom-color-picker"</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- hide an input here so that the FormData can pick it up --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">:name</span>=<span class="hljs-string">"$attrs.name"</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"model"</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- add a handler to the custom input that we can hook in to --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">RealNiceColorPicker</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">"model"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">

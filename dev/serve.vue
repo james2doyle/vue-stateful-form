@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import StatefulForm, { StatefulFormDetails } from '@/stateful-form.ts';
+import StatefulForm, { StatefulFormDetails } from '@/stateful-form';
 
 export default Vue.extend({
   name: 'ServeDev',
@@ -22,16 +22,19 @@ export default Vue.extend({
       data: {
         'my-text': 'This is my text field',
         'my-email': 'james2doyle@gmail.com',
-        // 'my-file': 'james2doyle@gmail.com',
+        'my-file': {},
         'my-tel': '12345678900',
         'my-url': 'https://ohdoylerules.com',
+        'my-password': null,
         'my-textarea': 'This is my textarea',
         'my-select': '2',
+        'my-second-select': '1',
         'my-multi-select': ['3'],
         'my-range': '25',
         'my-checkbox': '1',
         'my-multi-checkbox': ['2'],
         'my-radio': '1',
+        'custom-icon': null,
       },
       schema: [
         {
@@ -40,6 +43,7 @@ export default Vue.extend({
           placeholder: 'Enter in your text',
           type: 'text',
           required: true,
+          whenEmpty: '', // use `''` instead of `null` when the field is empty
         },
         {
           name: 'my-email',
@@ -76,6 +80,7 @@ export default Vue.extend({
         },
         {
           name: 'my-multi-checkbox',
+          id: 'my-multi-checkbox',
           type: 'checkbox',
           options: [
             { value: '1', label: 'Checkbox One' },
@@ -100,6 +105,17 @@ export default Vue.extend({
         },
         {
           name: 'my-select',
+          id: 'my-dropdown',
+          type: 'select',
+          options: [
+            { value: '1', label: 'One' },
+            { value: '2', label: 'Two' },
+            { value: '3', label: 'Three' },
+          ],
+        },
+        {
+          name: 'my-second-select',
+          id: 'my-second-dropdown',
           type: 'select',
           options: [
             { value: '1', label: 'One' },
@@ -114,6 +130,16 @@ export default Vue.extend({
             { value: '1', label: 'One' },
             { value: '2', label: 'Two' },
             { value: '3', label: 'Three' },
+          ],
+        },
+        {
+          name: 'custom-icon',
+          type: 'EmojiPicker',
+          options: [
+            { value: 'bear', label: '🐻' },
+            { value: 'fox', label: '🦊' },
+            { value: 'dog', label: '🐶' },
+            { value: 'mouse', label: '🐹' },
           ],
         },
         {

@@ -80,11 +80,12 @@ export default Vue.extend({
         'my-url': 'https://ohdoylerules.com',
         'my-textarea': 'This is my textarea',
         'my-select': '2',
-        'my-multi-select': ['3'], // multiple values require arrays
         'my-range': '25',
         'my-checkbox': '1',
         'my-multi-checkbox': ['2'], // multiple values require arrays
         'my-radio': '1',
+        'my-multi-select': ['3'], // multiple values require arrays
+        'custom-icon': null, // example of custom element with empty starting state
       },
       schema: [
         {
@@ -93,6 +94,7 @@ export default Vue.extend({
           label: 'My Text Field',
           type: 'text',
           required: true,
+          whenEmpty: '', // use `''` instead of `null` when the field is empty
         },
         {
           name: 'my-email',
@@ -167,6 +169,16 @@ export default Vue.extend({
             { value: '1', label: 'One' },
             { value: '2', label: 'Two' },
             { value: '3', label: 'Three' },
+          ],
+        },
+        {
+          name: 'custom-icon',
+          type: 'EmojiPicker', // custom element registered with `Vue.component(...)`
+          options: [
+            { value: 'bear', label: '🐻' },
+            { value: 'fox', label: '🦊' },
+            { value: 'dog', label: '🐶' },
+            { value: 'mouse', label: '🐹' },
           ],
         },
         {
@@ -248,20 +260,26 @@ You can see an example of this below:
 
 ```html
 <template>
-  <!-- hide an input here so that the FormData can pick it up -->
-  <input type="hidden" :name="$attrs.name" :value="model">
-  <!-- add a handler to the custom input that we can hook in to -->
-  <RealNiceColorPicker @change="handleChange" />
+  <div class="emoji-picker">
+    <!-- hide an input here so that the FormData can pick it up -->
+    <input type="hidden" :name="$attrs.name" :value="model">
+    <!-- add a handler to the custom input that we can hook in to -->
+    <button v-for="option in options" :key="option.value" type="button" :class="{ 'emoji-picker-selected': model === option.value}" @click.prevent="handleClick(option.value)" v-text="option.label"></button>
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'MyCustomColorPicker',
-  // other stuff...
+  name: 'EmojiPicker',
   props: {
     // value prop is always passed if a custom component is detected
     value: {
       type: String,
+      required: false, // can be null
+      default: null,
+    },
+    options: {
+      type: Array,
       required: true,
     },
   },
@@ -272,9 +290,9 @@ export default {
     };
   },
   methods: {
-    handleChange(color) {
+    handleClick(icon) {
       // update the local state that sets the value of the hidden input
-      this.model = color;
+      this.model = icon;
 
       const evt = new Event('input', { bubbles: true, cancelable: false });
       // emit the native event on the parent form
@@ -283,16 +301,37 @@ export default {
   },
 };
 </script>
+
+<style>
+.emoji-picker button {
+  cursor: pointer;
+  background: #ccc;
+  border: 1px solid #999;
+  border-radius: 2px;
+  margin: 0 0.5rem 1rem 0;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  will-change: opacity;
+}
+.emoji-picker button:hover {
+  opacity: 0.8;
+}
+.emoji-picker button.emoji-picker-selected {
+  opacity: 1;
+}
+</style>
 ```
 
 Another option is to bind the `v-model` directly to the custom component and then use a watcher to call the native event:
 
 ```html
 <template>
-  <!-- hide an input here so that the FormData can pick it up -->
-  <input type="hidden" :name="$attrs.name" :value="model">
-  <!-- add a handler to the custom input that we can hook in to -->
-  <RealNiceColorPicker v-model="model" />
+  <div class="my-custom-color-picker">
+    <!-- hide an input here so that the FormData can pick it up -->
+    <input type="hidden" :name="$attrs.name" :value="model">
+    <!-- add a handler to the custom input that we can hook in to -->
+    <RealNiceColorPicker v-model="model" />
+  </div>
 </template>
 
 <script>
